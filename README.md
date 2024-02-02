@@ -14,4 +14,5 @@ This scripts is much more powerfull when we use an ssh `config` file
 ![interface](./interface.png)
 
 _TO DO_<br>
-_Implement terminal inside the interface_
+[]_Implement terminal inside the interface_
+[]_Implement server status_ 
