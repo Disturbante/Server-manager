@@ -5,6 +5,7 @@ to run the server manager we simply need to download the git repo:
 ```bash
 git clone https://github.com/Disturbante/Server-manager.git
 cd Server-manager
+pip3 install -r requirements.txt
 chmod +x Server-manager.py
 ./Server-manager.py
 ```
