@@ -148,12 +148,7 @@ class ServerManager(QMainWindow):
     def update_terminal(self):
         # Check for new data in the SSH channel and update the terminal content
         if self.channel.recv_ready():
-            # if self.channel.recv(1024).decode('utf-8', 'replace') == '[?2004l':
-
-            #     output = ''
-            # else:
-            #     output = self.channel.recv(1024).decode('utf-8', 'replace')
-            output = self.channel.recv(1024).decode('ascii')
+            output = self.channel.recv(1024).decode('utf-8')
             self.terminal_content.insertPlainText(output)
             self.terminal_content.moveCursor(QTextCursor.End)
 
