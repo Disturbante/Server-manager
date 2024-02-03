@@ -9,7 +9,7 @@ chmod +x Server-manager.py
 ./Server-manager.py
 ```
 We can manage server and use the python script also on other server, we just need to import the `servers.json` file that would be created when we add or remove servers.<br>
-This scripts is much more powerfull when we use an ssh `config` file
+This scripts is much more powerfull when we use an ssh `config` file<br>
 _old tkinter interface:_
 ![interface](./interface.png)
 
