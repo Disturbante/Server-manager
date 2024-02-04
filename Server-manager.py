@@ -4,11 +4,11 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QListWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QWidget, QInputDialog, QFrame, QTextEdit, QLabel, QLineEdit
 )
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor, QColor
 from PyQt5.QtCore import QTimer
 import json
 import paramiko
-
+from ping3 import ping
 
 class ServerManager(QMainWindow):
     def __init__(self):
@@ -75,6 +75,9 @@ class ServerManager(QMainWindow):
         for server in self.servers:
             self.server_list_widget.addItem(server)
 
+        # Update server statuses initially
+        self.update_server_statuses()
+
         # SSH client instance
         self.ssh_client = paramiko.SSHClient()
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -86,6 +89,44 @@ class ServerManager(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_terminal)
 
+        # QTimer for updating the server statuses
+        self.status_timer = QTimer(self)
+        self.status_timer.timeout.connect(self.update_server_statuses)
+        self.status_timer.start(30000)  # Set the interval in milliseconds (30 seconds)
+
+    def check_server_status(self, item):
+        params = item.text().split(' - ')
+        name = params[0]
+        ip = params[1]
+
+        try:
+            result = ping(ip, timeout=1)  # Set the timeout in seconds
+
+            if result is not None:
+                status_text = "Up"
+                status_color = QColor(0, 255, 0)  # Green color
+            else:
+                status_text = "Down"
+                status_color = QColor(255, 0, 0)  # Red color
+
+            item.setForeground(status_color)
+            item.setText(f"{name} - {ip} - {status_text}")
+
+        except Exception as e:
+            item.setForeground(QColor(255, 0, 0))  # Red color for error
+            item.setText(f"{name} - {ip} - Error checking status: {str(e)}")
+
+
+    def update_server_statuses(self):
+        # Iterate through servers and update their status in the list
+        for i in range(self.server_list_widget.count()):
+            item = self.server_list_widget.item(i)
+            self.check_server_status(item)
+
+    def show_terminal(self, item):
+        selected_server = item.text()
+        self.display_terminal(selected_server)
+
     def add_server(self):
         new_name, ok_name = QInputDialog.getText(self, "Add Server", "Enter server name:")
         if ok_name:
@@ -95,6 +136,7 @@ class ServerManager(QMainWindow):
                 self.servers.append(new_server)
                 self.server_list_widget.addItem(new_server)
                 self.save_servers()
+                self.update_server_statuses()
 
     def remove_server(self):
         selected_item = self.server_list_widget.currentItem()
@@ -104,16 +146,15 @@ class ServerManager(QMainWindow):
             self.server_list_widget.takeItem(self.server_list_widget.row(selected_item))
             self.terminal_content.clear()  # Clear the terminal when removing a server
             self.save_servers()
-
-    def show_terminal(self, item):
-        selected_server = item.text()
-        self.display_terminal(selected_server)
+            self.update_server_statuses()
 
     def display_terminal(self, server):
         self.terminal_content.clear()  # Clear previous terminal content
 
         # Emulate terminal content for the selected server
-        name, ip = server.split(' - ')
+        server_params = server.split(' - ')
+        name = server_params[0]
+        ip = server_params[1]
         self.terminal_content.append(f"Connecting to server {name} at {ip}...\n")
 
         # Prompt the user for SSH username and password
@@ -145,6 +186,8 @@ class ServerManager(QMainWindow):
             self.terminal_content.append("SSH authentication failed. Check username and password.\n")
         except paramiko.SSHException as e:
             self.terminal_content.append(f"SSH connection failed: {str(e)}\n")
+        except Exception as ecc:
+            self.terminal_content.append("SSH connection failed\n")
 
     def update_terminal(self):
         # Check for new data in the SSH channel and update the terminal content
@@ -154,15 +197,10 @@ class ServerManager(QMainWindow):
             self.terminal_content.moveCursor(QTextCursor.End)
 
     def execute_command(self):
-        # Get the entered command from the input bar
         command = self.command_input.text()
-
-        # Clear the input bar
         self.command_input.clear()
 
         if command:
-            # Send the command to the SSH session
-            #self.terminal_content.append(f"Executing command: {command}\n")
             self.channel.send(command + "\n")
 
     def load_servers(self):
@@ -177,9 +215,10 @@ class ServerManager(QMainWindow):
             json.dump(self.servers, file)
 
     def closeEvent(self, event):
-        # Stop the QTimer and close the SSH connection when the application is closed
         if self.timer.isActive():
             self.timer.stop()
+        if self.status_timer.isActive():
+            self.status_timer.stop()
         if self.channel:
             self.channel.close()
         self.ssh_client.close()
