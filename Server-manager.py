@@ -142,11 +142,14 @@ class ServerManager(QMainWindow):
         selected_item = self.server_list_widget.currentItem()
         if selected_item:
             server_to_remove = selected_item.text()
-            self.servers.remove(server_to_remove)
+            # Find the server in self.servers using the same format as in the GUI list
+            for server in self.servers:
+                if server == server_to_remove:
+                    self.servers.remove(server)
+                    break
             self.server_list_widget.takeItem(self.server_list_widget.row(selected_item))
             self.terminal_content.clear()  # Clear the terminal when removing a server
             self.save_servers()
-            self.update_server_statuses()
 
     def display_terminal(self, server):
         self.terminal_content.clear()  # Clear previous terminal content
