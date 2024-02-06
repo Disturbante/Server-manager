@@ -6,6 +6,7 @@ to run the server manager we simply need to download the git repo:
 git clone https://github.com/Disturbante/Server-manager.git
 cd Server-manager
 pip3 install -r requirements.txt
+sudo setcap cap_net_raw+ep $(readlink -f $(which python3))
 python3 Server-manager.py
 ```
 We can manage server and use the python script also on other server, we just need to import the `servers.json` file that would be created when we add or remove servers.<br>
