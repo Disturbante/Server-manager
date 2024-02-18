@@ -3,6 +3,7 @@
 from os import getpid
 import sqlite3
 from typing import Optional
+from ssh import SshServerInfo
 
 class Database:
     def __init__(self, db_name: str) -> None:
@@ -105,7 +106,7 @@ class SshServerTable:
                                              'password': 'TEXT',
                                              'private_key_path': 'TEXT'})
         
-    def insert_ssh_server(self, hostname: str, port: int, username: str, password: Optional[str] = None, private_key_path: Optional[str] = None) -> int:
+    def insert_ssh_server(self, server: SshServerInfo) -> int:
         """Insert a new SSH server into the table
         
         Args:
@@ -121,7 +122,7 @@ class SshServerTable:
         
         with self.__db as db:
             sql = 'INSERT INTO ssh_servers (hostname, port, username, password, private_key_path) VALUES (?, ?, ?, ?, ?)'
-            params = (hostname, port, username, password, private_key_path)
+            params = (server.hostname, server.port, server.username, server.password, server.private_key_path)
             db.execute(sql, params)
             return db.cursor.lastrowid
         
