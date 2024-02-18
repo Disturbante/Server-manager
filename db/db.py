@@ -2,8 +2,8 @@
 
 from os import getpid
 import sqlite3
-from typing import Optional
-from ssh import SshServerInfo
+from typing import Optional, Union, List
+from ssh.ssh_info import SshServerType
 
 class Database:
     def __init__(self, db_name: str) -> None:
@@ -106,16 +106,12 @@ class SshServerTable:
                                              'password': 'TEXT',
                                              'private_key_path': 'TEXT'})
         
-    def insert_ssh_server(self, server: SshServerInfo) -> int:
-        """Insert a new SSH server into the table
+    def add_ssh_server(self, server: SshServerType) -> int:
+        """Add a new SSH server into the table
         
         Args:
-            hostname (str): The hostname of the server.
-            port (int): The port number of the server.
-            username (str): The username to use when connecting to the server.
-            password (str, optional): The password to use when connecting to the server. Defaults to None.
-            private_key_path (str, optional): The path to the private key to use when connecting to the server. Defaults to None.
-        
+            server (SshServerType): The SSH server to insert.
+
         Returns:
             int: The row ID of the new SSH server.
         """
@@ -171,26 +167,29 @@ class SshServerTable:
             raise sqlite3.IntegrityError(f"No SSH server with ID {server_id} exists")
             print(f"Error deleting SSH server: {e}")
    
-    def select_ssh_servers(self, server_id: Optional[int] = None) -> list:
+    def get_ssh_servers(self, server_id: Optional[int] = None) -> Union[SshServerType, List[SshServerType]]:
         """Select SSH servers from the table
-        
+
         Args:
             server_id (int, optional): The ID of the server to select. Defaults to None.
-            
+
         Returns:
-            list: The selected SSH servers.
-        
+            Union[SshServerType, List[SshServerType]]: The selected SSH server or list of SSH servers.
+
         Example:
             select_ssh_servers() -> select all SSH servers
             select_ssh_servers(1) -> select SSH server with ID 1
         """
-        if server_id is None:
-            with self.__db as db:
+        with self.__db as db:
+            if server_id is None:
                 sql = 'SELECT * FROM ssh_servers'
                 db.execute(sql)
-                return db.fetchall()
-        else:
-            with self.__db as db:
+                rows = db.fetchall()
+                return [SshServerType(row['hostname'], row['port'], row['username'], row['password'], row['private_key_path']) for row in rows]
+            else:
                 sql = 'SELECT * FROM ssh_servers WHERE id = ?'
                 db.execute(sql, (server_id,))
-                return db.fetchone()
+                row = db.fetchone()
+                if row is None:
+                    return None
+                return SshServerType(row['hostname'], row['port'], row['username'], row['password'], row['private_key_path'])
