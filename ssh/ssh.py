@@ -3,7 +3,7 @@ from typing import Optional
 from .ssh_info import SshServerType
 import socket
 import sys
-from paramiko.py3compat import u
+# from paramiko.py3compat import u
 import paramiko
 
 # windows does not have termios...
