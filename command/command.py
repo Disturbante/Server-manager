@@ -53,7 +53,7 @@ class CommandManager:
         self._add_subparsers()
         
     def _add_subparsers(self):
-        subparsers = self.parser.add_subparsers(title="Commands")
+        subparsers = self.parser.add_subparsers(title="Commands", dest="command")
         
         add = subparsers.add_parser("add", help='Add a new SSH server.')
         add.add_argument('-H', '--hostname', required=True, help='Hostname of the SSH server.')
@@ -79,5 +79,7 @@ class CommandManager:
         lists = subparsers.add_parser("list", help='List all SSH servers.')
              
     def parse_args(self):
-        return self.parser.parse_args()
+        return self.parser
+
+
 
