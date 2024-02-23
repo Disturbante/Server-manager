@@ -60,7 +60,7 @@ class CommandManager:
         add.add_argument('-p', '--port', required=True, type=int, help='Port of the SSH server.')
         add.add_argument('-U', '--username', required=True, help='Username for the SSH server.')
         add.add_argument('-P', '--password', help='Password for the SSH server.')
-        add.add_argument('-k', '--key', help='Key for the SSH server.')
+        add.add_argument('-k', '--private_key_path', help='private_key_path for the SSH server.')
         
         get = subparsers.add_parser("get", help='Get a SSH server.')
         get.add_argument('-i', '--id', type=int, help='ID of the SSH server.')
@@ -71,12 +71,15 @@ class CommandManager:
         update.add_argument('-p', '--port', type=int, help='Port of the SSH server.')
         update.add_argument('-U', '--username', help='Username for the SSH server.')
         update.add_argument('-P', '--password', help='Password for the SSH server.')
-        update.add_argument('-k', '--key', help='Key for the SSH server.')
+        update.add_argument('-k', '--private_key_path', help='private_key_path for the SSH server.')
         
         delete = subparsers.add_parser('delete', help='Delete a SSH server.')
         delete.add_argument('-i', '--id', type=int, help='ID of the SSH server.')
         
         lists = subparsers.add_parser("list", help='List all SSH servers.')
+        
+        connect = subparsers.add_parser("connect", help='Connect to a SSH server.')
+        connect.add_argument('-i', '--id', type=int, help='ID of the SSH server.')
              
     def parse_args(self):
         return self.parser

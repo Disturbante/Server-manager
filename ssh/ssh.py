@@ -5,6 +5,7 @@ import socket
 import sys
 # from paramiko.py3compat import u
 import paramiko
+from paramiko.py3compat import u
 
 # windows does not have termios...
 try:
@@ -142,27 +143,28 @@ class SshServerManager:
     def __init__(self, db_name: str):
         self.__db = SshServerTable(db_name)
         
-    def add_ssh_server(self, server: SshServerType) -> int:
+    def add(self, server: SshServerType) -> int:
         return self.__db.add_ssh_server(server)
     
-    def update_ssh_server(self, server_id: int, **fields) -> None:
+    def update(self, server_id: int, **fields) -> None:
         self.__db.update_ssh_server(server_id, **fields)
         
-    def delete_ssh_server(self, server_id: int) -> None:
+    def delete(self, server_id: int) -> None:
         self.__db.delete_ssh_server(server_id)
         
-    def get_ssh_server(self, server_id: int) -> SshServerType:
+    def get(self, server_id: int) -> SshServerType:
         return self.__db.get_ssh_servers(server_id)
     
-    def get_all_ssh_servers(self) -> list:
+    def all(self) -> list:
         return self.__db.get_ssh_servers()
     
-    def connect_to_ssh_server(self, server_id: int) -> BaseSshServer:
+    def connect(self, server_id: int) -> BaseSshServer:
         server = self.__db.get_ssh_servers(server_id)
+        ssh = SshServerType(server.hostname, server.port, server.username, server.password, server.private_key_path)
         if server.password is not None:
-            return PasswordSshServer(server)
+            return PasswordSshServer(ssh)
         elif server.private_key_path is not None:
-            return KeySshServer(server)
+            return KeySshServer(ssh)
         else:
             raise ValueError('No password or private key path provided for server')
         

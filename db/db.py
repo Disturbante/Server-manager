@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from os import getpid
+import os
+from signal import SIGKILL
 import sqlite3
 from typing import Optional, Union, List
 from ssh.ssh_info import SshServerType
@@ -45,17 +47,17 @@ class Database:
                 db.execute('INSERT INTO my_table (name) VALUES (?)', ('test',))
                 print(db.fetchall())
         """
-        try:
-            if exc_type is not None:
-                self.conn.rollback()
-            else:
-                self.conn.commit()
-        except sqlite3.Error as e:
-            print(f"Error committing changes to database: {e}")
-        finally:
-            self.conn.close()
-            if exc_type is not None:
-                os.kill(self.pid, SIGKILL)
+        # try:
+        #     if exc_type is not None:
+        #         self.conn.rollback()
+        #     else:
+        #         self.conn.commit()
+        # except sqlite3.Error as e:
+        #     print(f"Error committing changes to database: {e}")
+        # finally:
+        #     self.conn.close()
+        #     if exc_type is not None:
+        #         os.kill(self.pid, SIGKILL)
 
 
     def create_table(self, table_name: str, fields: dict) -> None:
